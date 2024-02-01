@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <style>
+        .machine-box {
+            margin: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="mt-4 mb-4">机器状态显示</h1>
+
+    <div class="row">
+        {% for machine in machines %}
+            <div class="col-md-4">
+                <div class="machine-box {{ 'bg-success' if machine['status'] == 'on' else 'bg-danger' }}">
+                    <h4>{{ machine['name'] }}</h4>
+                    <p>状态: {{ machine['status'] }}</p>
+                    <p>{{ machine['time'].strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <button class="btn btn-primary" onclick="confirmToggleStatus({{ loop.index0 }}, 'restart')">重启</button>
+                    <button class="btn btn-primary" onclick="confirmToggleStatus({{ loop.index0 }}, 'shutdown')">关机</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+    function confirmToggleStatus(index, operation) {
+        var confirmation = confirm('确定执行操作？');
+        if (confirmation) {
+            toggleStatus(index, operation);
+        }
+    }
+
+    function toggleStatus(index, operation) {
+        fetch('/toggle_status/' + index+'/'+operation)
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
+</body>
+</html>
